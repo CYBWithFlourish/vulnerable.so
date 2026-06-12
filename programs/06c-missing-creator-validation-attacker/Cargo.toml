@@ -1,0 +1,21 @@
+[package]
+name = "missing-creator-validation-attacker"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "missing_creator_validation_attacker"
+
+[dependencies]
+anchor-lang = { workspace = true }
+pinocchio = { workspace = true }
+
+[dev-dependencies]
+missing-creator-validation-vuln = { path = "../06a-missing-creator-validation-vuln", features = ["no-entrypoint"] }
+missing-creator-validation-fix = { path = "../06b-missing-creator-validation-fix", features = ["no-entrypoint"] }
+anchor-lang = { workspace = true }
+
+[features]
+idl-build = ["anchor-lang/idl-build"]
+no-entrypoint = []

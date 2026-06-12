@@ -1384,6 +1384,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "missing-creator-validation-attacker"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.32.1",
+ "missing-creator-validation-fix",
+ "missing-creator-validation-vuln",
+ "pinocchio",
+]
+
+[[package]]
+name = "missing-creator-validation-fix"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.32.1",
+ "pinocchio",
+]
+
+[[package]]
+name = "missing-creator-validation-vuln"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.32.1",
+ "pinocchio",
+]
+
+[[package]]
 name = "num-bigint"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
