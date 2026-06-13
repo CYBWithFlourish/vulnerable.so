@@ -20,6 +20,9 @@ cpi-reentrancy-attacker = "CyqpEJ3GVbEnCGZTdHRyMf4hFTrKpgGpRAVdMuoj9b68"
 signer-privilege-vuln = "2nFkzaXmTLcMRCSnY69N8sLnrrV7EaPNZ2qUEwc4kTB3"
 signer-privilege-fix = "2WaUZF4ia7SApLzQY6DHN2qbc3LE8WEsDU3pTr6iupB9"
 signer-privilege-attacker = "BUpRCbMnYV3kTTqXbdXJ4KcnzcoxSk7G1iYK2xNEoiHW"
+missing-creator-validation-vuln = "7tFALhdsgiKWNHh5pmzz9wQ5RJgKKiHcRMcZa1Gz8xFX"
+missing-creator-validation-fix = "HiSasSPpwvxphdgGsp7iim4CjpYc6CJwY6uUWp9Qqhqc"
+missing-creator-validation-attacker = "EZr1HQFm4MrUebcLfN2Zf8LVCYhAxorFxyuw3Gx1CXCP"
 
 [registry]
 url = "https://anchor.projectserum.com"
