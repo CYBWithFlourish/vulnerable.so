@@ -102,7 +102,8 @@ mod tests {
     }
 
     fn serialize_fund(creator: Pubkey) -> Vec<u8> {
-        let mut data = <missing_creator_validation_vuln::Fund as Discriminator>::DISCRIMINATOR.to_vec();
+        let mut data =
+            <missing_creator_validation_vuln::Fund as Discriminator>::DISCRIMINATOR.to_vec();
         let state = missing_creator_validation_vuln::Fund {
             name: "Vulnerable Campaign".to_string(),
             description: "Some description".to_string(),
@@ -117,7 +118,8 @@ mod tests {
     }
 
     fn serialize_fixed_fund(creator: Pubkey) -> Vec<u8> {
-        let mut data = <missing_creator_validation_fix::Fund as Discriminator>::DISCRIMINATOR.to_vec();
+        let mut data =
+            <missing_creator_validation_fix::Fund as Discriminator>::DISCRIMINATOR.to_vec();
         let state = missing_creator_validation_fix::Fund {
             name: "Fixed Campaign".to_string(),
             description: "Some description".to_string(),
@@ -132,7 +134,9 @@ mod tests {
     }
 
     fn serialize_contribution(contributor: Pubkey, fund: Pubkey, amount: u64) -> Vec<u8> {
-        let mut data = <missing_creator_validation_vuln::Contribution as Discriminator>::DISCRIMINATOR.to_vec();
+        let mut data =
+            <missing_creator_validation_vuln::Contribution as Discriminator>::DISCRIMINATOR
+                .to_vec();
         let state = missing_creator_validation_vuln::Contribution {
             contributor,
             fund,
@@ -166,10 +170,8 @@ mod tests {
             vec![],
         )));
 
-        let (contribution_pda, bump) = Pubkey::find_program_address(
-            &[fund_pda.as_ref(), contributor.as_ref()],
-            &program_id,
-        );
+        let (contribution_pda, bump) =
+            Pubkey::find_program_address(&[fund_pda.as_ref(), contributor.as_ref()], &program_id);
 
         let contribution_ai = Box::leak(Box::new(make_account_with_key(
             contribution_pda,
@@ -192,7 +194,8 @@ mod tests {
             (*contributor_ai).clone(),
             (*contribution_ai).clone(),
             (*system_program_ai).clone(),
-        ].into_boxed_slice();
+        ]
+        .into_boxed_slice();
         let mut info_slice: &[AccountInfo] = Box::leak(infos);
 
         let mut bumps = missing_creator_validation_vuln::FundContributeBumps { contribution: bump };
@@ -270,10 +273,12 @@ mod tests {
             (*contributor_ai).clone(),
             (*contribution_ai).clone(),
             (*system_program_ai).clone(),
-        ].into_boxed_slice();
+        ]
+        .into_boxed_slice();
         let mut info_slice: &[AccountInfo] = Box::leak(infos);
-        
-        let mut bumps = missing_creator_validation_fix::FundContributeSafeBumps { contribution: bump };
+
+        let mut bumps =
+            missing_creator_validation_fix::FundContributeSafeBumps { contribution: bump };
         let mut reallocs = BTreeSet::new();
 
         // Anchor try_accounts executes constraints automatically

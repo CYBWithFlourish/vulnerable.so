@@ -7,7 +7,7 @@ pub struct Vault {
     pub owner: Pubkey,
 }
 
-declare_id!("3NZhPHoG5Gg3wkAitNxNMRmK8wNrYBpstkGJhhQkYEqz");
+declare_id!("FZqsk1cmkFbbJowGxM3ejY2zf4ieN5uaSLuEqAbUwVSv");
 
 #[program]
 pub mod unsafe_arithmetic_fix {
@@ -19,8 +19,8 @@ pub mod unsafe_arithmetic_fix {
         // --- THE FIX: CHECKED ARITHMETIC ---
         //
         // 1. .checked_sub(amount):
-        //    Instead of using the `-` operator, we use a method that returns 
-        //    an `Option<u64>`. 
+        //    Instead of using the `-` operator, we use a method that returns
+        //    an `Option<u64>`.
         //    - If the result is >= 0, it returns `Some(result)`.
         //    - If the result would underflow (e.g., 10 - 11), it returns `None`.
         //
@@ -30,7 +30,7 @@ pub mod unsafe_arithmetic_fix {
         //    - `None` becomes `Err(CustomError::InsufficientFunds)`.
         //
         // 3. The `?` Operator:
-        //    If the result is an `Err`, the `?` immediately exits the function 
+        //    If the result is an `Err`, the `?` immediately exits the function
         //    and returns that error to the Solana runtime.
         //
         // RESULT: The account state is never updated if the math is invalid.
@@ -53,7 +53,7 @@ pub struct WithdrawSafe<'info> {
 
 #[error_code]
 pub enum CustomError {
-    // Adding a descriptive error message helps frontend developers 
+    // Adding a descriptive error message helps frontend developers
     // and users understand why a transaction was rejected.
     #[msg("The requested withdrawal amount exceeds the vault balance.")]
     InsufficientFunds,
@@ -65,7 +65,10 @@ mod tests {
 
     #[test]
     fn safe_blocks_underflow_and_allows_valid_withdraw() {
-        let vault = Vault { balance: 10, owner: Pubkey::new_unique() };
+        let vault = Vault {
+            balance: 10,
+            owner: Pubkey::new_unique(),
+        };
 
         // Underflow should be caught by checked_sub.
         let err = vault

@@ -7,7 +7,7 @@ pub struct Vault {
     pub owner: Pubkey,
 }
 
-declare_id!("Ct3nnwHVXu6b7ZSCyXzqwSc5yZ2VtaREVBPKPMJJYYCy");
+declare_id!("Ed5tUofMob6NumK3kfY2TZ3SaD6v6sqFTCWRQgAJjGHa");
 
 #[program]
 pub mod unsafe_arithmetic_vuln {
@@ -19,12 +19,12 @@ pub mod unsafe_arithmetic_vuln {
         // --- THE VULNERABILITY ---
         // This line uses the standard subtraction operator (-=).
         //
-        // 1. THE BEHAVIOR: 
-        //    In Rust, if this code is compiled in "Release" mode (which is standard 
-        //    for Solana Mainnet deployments), the compiler does NOT include 
+        // 1. THE BEHAVIOR:
+        //    In Rust, if this code is compiled in "Release" mode (which is standard
+        //    for Solana Mainnet deployments), the compiler does NOT include
         //    runtime checks for integer underflow. Instead, it uses "Two's Complement" wrapping.
         //
-        // 2. THE MATH: 
+        // 2. THE MATH:
         //    If vault.balance is 10 and the user requests an amount of 11:
         //    10 - 11 = -1
         //    Since balance is a u64 (unsigned 64-bit integer), it cannot represent -1.
@@ -32,11 +32,11 @@ pub mod unsafe_arithmetic_vuln {
         //    18,446,744,073,709,551,615
         //
         // 3. THE EXPLOIT:
-        //    An attacker with a balance of 0 can withdraw 1 Lamport. 
-        //    The transaction will succeed, and the attacker's vault balance 
-        //    will suddenly become nearly infinite, allowing them to drain 
+        //    An attacker with a balance of 0 can withdraw 1 Lamport.
+        //    The transaction will succeed, and the attacker's vault balance
+        //    will suddenly become nearly infinite, allowing them to drain
         //    every other user's funds from the program.
-        vault.balance -= amount; 
+        vault.balance -= amount;
 
         Ok(())
     }
@@ -48,7 +48,10 @@ mod tests {
 
     #[test]
     fn vuln_wraps_on_underflow() {
-        let mut vault = Vault { balance: 10, owner: Pubkey::new_unique() };
+        let mut vault = Vault {
+            balance: 10,
+            owner: Pubkey::new_unique(),
+        };
         let amount = 11u64;
 
         // Mirror vulnerable logic: wrapping subtraction in release mode.
@@ -60,7 +63,7 @@ mod tests {
 
 #[derive(Accounts)]
 pub struct WithdrawVuln<'info> {
-    // We check that the signer is the owner, but we fail to check 
+    // We check that the signer is the owner, but we fail to check
     // if the owner actually has enough funds for the withdrawal.
     #[account(mut, has_one = owner)]
     pub vault: Account<'info, Vault>,

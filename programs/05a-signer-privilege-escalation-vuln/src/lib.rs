@@ -3,11 +3,11 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct Settings {
-    pub owner: Pubkey,  // This field is INTENDED to be the only one allowed to pause.
+    pub owner: Pubkey, // This field is INTENDED to be the only one allowed to pause.
     pub paused: bool,
 }
 
-declare_id!("CCNpf7UQQF1aiHQsBi4exRoBTBrmrfL69evdChUWfgYu");
+declare_id!("4kDFeDeUdQ7KWBVr5aqJHN6MCZJ3CTDnbAGqqi9c4naW");
 
 #[program]
 pub mod signer_privilege_vuln {
@@ -21,11 +21,11 @@ pub mod signer_privilege_vuln {
         //
         // It has NOT verified that 'anyone.key()' == 'settings.owner'.
         let settings = &mut ctx.accounts.settings;
-        
-        // Because there is no check, ANY user who signs the transaction 
+
+        // Because there is no check, ANY user who signs the transaction
         // can reach this line and modify the global protocol state.
         settings.paused = !settings.paused;
-        
+
         Ok(())
     }
 }
@@ -39,9 +39,9 @@ pub struct TogglePauseVuln<'info> {
 
     // 'Signer' only ensures that the transaction was signed by THIS account.
     // An attacker simply provides their own wallet here and signs.
-    // Since the program doesn't link 'anyone' to 'settings.owner', 
+    // Since the program doesn't link 'anyone' to 'settings.owner',
     // the identity of the signer is effectively ignored.
-    pub anyone: Signer<'info>, 
+    pub anyone: Signer<'info>,
 }
 
 #[cfg(test)]
@@ -50,7 +50,10 @@ mod tests {
 
     #[test]
     fn vuln_allows_any_signer_to_toggle() {
-        let mut settings = Settings { owner: Pubkey::new_unique(), paused: false };
+        let mut settings = Settings {
+            owner: Pubkey::new_unique(),
+            paused: false,
+        };
         let attacker = Pubkey::new_unique();
 
         // Mirrors vulnerable behavior: signer identity not checked against owner.

@@ -11,7 +11,7 @@ pub struct Vault {
     pub balance: u64,
 }
 
-declare_id!("3fZumrfAKbgq5YXnDqaeGF6TbHsHajvLPe5hpqUzNMV4");
+declare_id!("1bvgQTubQCxQ7jHrVDXJmZ9qHFGaAXEjbRSZMMmS3ZZ");
 
 #[program]
 pub mod cpi_reentrancy_fix {
@@ -45,8 +45,7 @@ pub mod cpi_reentrancy_fix {
                 program_id: ctx.accounts.attacker_program.key(),
                 accounts: vec![
                     anchor_lang::solana_program::instruction::AccountMeta::new_readonly(
-                        vault_key,
-                        false,
+                        vault_key, false,
                     ),
                     anchor_lang::solana_program::instruction::AccountMeta::new_readonly(
                         victim_program,

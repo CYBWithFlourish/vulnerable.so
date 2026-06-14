@@ -2653,6 +2653,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
 
 [[package]]
+name = "transfer-hook-attacker"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.32.1",
+ "pinocchio",
+ "transfer-hook-fix",
+ "transfer-hook-vuln",
+]
+
+[[package]]
+name = "transfer-hook-fix"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.32.1",
+ "pinocchio",
+]
+
+[[package]]
+name = "transfer-hook-vuln"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang 0.32.1",
+ "pinocchio",
+]
+
+[[package]]
 name = "typenum"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

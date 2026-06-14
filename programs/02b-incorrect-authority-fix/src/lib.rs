@@ -1,7 +1,7 @@
 #![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
 
-declare_id!("HxCP8gJoGEhQ61kfihgq9bxTq1Spjmf3mqKgqeeau8sr");
+declare_id!("Eu3Vy7HhHGXeW5qiYSfTEPiF1ZbA8224E2VEjNRRHgRv");
 
 #[program]
 pub mod incorrect_authority_fix {
@@ -14,11 +14,11 @@ pub mod incorrect_authority_fix {
         require!(new_fee <= 10_000, CustomError::InvalidFee);
 
         // 2. STATE UPDATE
-        // Because of the checks in the 'SetFeeSafe' struct, we can be 100% 
-        // certain that at this point, 'ctx.accounts.admin' is the correct 
+        // Because of the checks in the 'SetFeeSafe' struct, we can be 100%
+        // certain that at this point, 'ctx.accounts.admin' is the correct
         // authority and they have signed the transaction.
         ctx.accounts.config.fee_bps = new_fee;
-        
+
         msg!("Fee successfully updated to: {}", new_fee);
         Ok(())
     }
@@ -39,15 +39,15 @@ pub struct SetFeeSafe<'info> {
 
     /// THE FIX: Authorized Signer
     /// 1. Anchor verifies this account actually signed the transaction.
-    /// 2. Because of the 'has_one' above, this MUST be the public key 
+    /// 2. Because of the 'has_one' above, this MUST be the public key
     ///    stored inside the Config account's 'admin' field.
     pub admin: Signer<'info>,
 }
 
 #[account]
 pub struct Config {
-    pub admin: Pubkey,   // The "Owner" of the protocol.
-    pub fee_bps: u16,    // The value being protected.
+    pub admin: Pubkey, // The "Owner" of the protocol.
+    pub fee_bps: u16,  // The value being protected.
 }
 
 #[error_code]

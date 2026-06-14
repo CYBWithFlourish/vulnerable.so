@@ -14,7 +14,7 @@ pub struct Vault {
 // VULNERABLE: makes an external CPI before updating state and has no
 // re-entrancy guard. A malicious CPI target could re-enter this instruction
 // within the same transaction and drain funds.
-declare_id!("3Wv8r3JoVwP85RWaDhiNipMPWwNXr671T8ND93i5bdqS");
+declare_id!("GYy5rDfXMACswfqCFrdNhyCtjrHjLfrwLiv4mcneCXEN");
 
 #[program]
 pub mod cpi_reentrancy_vuln {
@@ -39,8 +39,7 @@ pub mod cpi_reentrancy_vuln {
                 program_id: ctx.accounts.attacker_program.key(),
                 accounts: vec![
                     anchor_lang::solana_program::instruction::AccountMeta::new_readonly(
-                        vault_key,
-                        false,
+                        vault_key, false,
                     ),
                     anchor_lang::solana_program::instruction::AccountMeta::new_readonly(
                         victim_program,

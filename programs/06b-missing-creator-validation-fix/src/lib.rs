@@ -11,9 +11,7 @@ pub mod missing_creator_validation_fix {
         let fund = &mut ctx.accounts.fund;
         let contribution = &mut ctx.accounts.contribution;
 
-        if fund.deadline != 0
-            && fund.deadline < Clock::get()?.unix_timestamp as u64
-        {
+        if fund.deadline != 0 && fund.deadline < Clock::get()?.unix_timestamp as u64 {
             return Err(ErrorCode::DeadlineReached.into());
         }
 
@@ -152,10 +150,10 @@ mod tests {
         let program_id = crate::id();
         let creator_a = Pubkey::new_unique();
         let creator_b_attacker = Pubkey::new_unique();
-        
+
         let fund_pda = Pubkey::new_unique();
         let contributor = Pubkey::new_unique();
-        
+
         // Fund is owned by creator_b_attacker
         let fund_ai = Box::leak(Box::new(make_account_with_key(
             fund_pda,
@@ -182,10 +180,8 @@ mod tests {
             vec![],
         )));
 
-        let (_contribution_pda, _bump) = Pubkey::find_program_address(
-            &[fund_pda.as_ref(), contributor.as_ref()],
-            &program_id,
-        );
+        let (_contribution_pda, _bump) =
+            Pubkey::find_program_address(&[fund_pda.as_ref(), contributor.as_ref()], &program_id);
 
         let _contribution_ai = Box::leak(Box::new(make_account_with_key(
             _contribution_pda,
@@ -206,7 +202,7 @@ mod tests {
         // Try to construct FundContributeSafe accounts struct:
         // Normally Anchor generates the check: fund.creator == creator.key()
         let fund_account = Account::<Fund>::try_from(&*fund_ai).unwrap();
-        
+
         // Manual verification check simulating has_one:
         let creator_matches = fund_account.creator == *creator_a_ai.key;
         assert!(!creator_matches); // Correctly identified mismatch!

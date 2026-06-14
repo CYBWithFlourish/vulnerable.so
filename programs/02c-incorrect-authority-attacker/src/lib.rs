@@ -1,10 +1,10 @@
 #![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
 
-declare_id!("ijFtSQNrTSUEXJvKfrLVPTa4SKXCCMDfeJWNkxZmTR2");
+declare_id!("EZdu1TQcrcif8U4KCkPhM9wcfDat2pUqDQECrSFKZTWx");
 
 /// # Incorrect Authority Attacker Program
-/// 
+///
 /// This program demonstrates how to exploit incorrect authority validation vulnerabilities.
 /// It attempts to attack both the vulnerable and fixed versions to show:
 /// - **Vulnerable version**: Attack succeeds (unauthorized fee modification)
@@ -33,7 +33,7 @@ pub mod incorrect_authority_attacker {
     use super::*;
 
     /// Attempts to exploit the incorrect authority validation vulnerability
-    /// 
+    ///
     /// This demonstrates privilege escalation where a non-admin attacker
     /// can modify protocol parameters (like fees) that should be restricted
     /// to the admin account only.
@@ -44,12 +44,12 @@ pub mod incorrect_authority_attacker {
         msg!("🎯 Attacker: Attempting unauthorized authority escalation...");
         msg!("   Attacker wallet: {}", ctx.accounts.attacker.key());
         msg!("   Trying to set fee to: {} basis points", malicious_fee);
-        
+
         // --- ATTACK STEP 1: Verify attack setup ---
         // The attacker is NOT the admin, but they're trying to call admin functions
         msg!("   ✓ Attacker has signed the transaction");
         msg!("   ✓ Malicious fee parameter prepared: {}", malicious_fee);
-        
+
         // --- ATTACK STEP 2: Explain the vulnerability ---
         // VULNERABLE CODE: Only checks if someone signed, not WHO signed
         // ```rust
@@ -61,7 +61,7 @@ pub mod incorrect_authority_attacker {
         // ```
         msg!("   ⚠️  Vulnerability: Victim checks Signer, not identity");
         msg!("   ⚠️  Missing: has_one = admin constraint");
-        
+
         // --- ATTACK STEP 3: Demonstrate the exploit ---
         // The attacker will call the victim program's set_fee instruction
         // passing their own account as the "caller" despite not being admin
@@ -69,17 +69,20 @@ pub mod incorrect_authority_attacker {
         msg!("   Expected outcome:");
         msg!("      - Vulnerable version: Fee changed ✅");
         msg!("      - Fixed version: Transaction rejected ❌");
-        
+
         // Log the attack attempt
         let attack_log = &mut ctx.accounts.attack_log;
         attack_log.attacker = ctx.accounts.attacker.key();
         attack_log.target_config = ctx.accounts.target_config.key();
         attack_log.malicious_fee = malicious_fee;
         attack_log.timestamp = Clock::get()?.unix_timestamp;
-        
+
         msg!("✅ Attacker: Attack execution completed");
-        msg!("   (If victim program is vulnerable, fee is now {}", malicious_fee);
-        
+        msg!(
+            "   (If victim program is vulnerable, fee is now {}",
+            malicious_fee
+        );
+
         Ok(())
     }
 
@@ -90,8 +93,11 @@ pub mod incorrect_authority_attacker {
         attack_log.target_config = Pubkey::default();
         attack_log.malicious_fee = 0;
         attack_log.timestamp = 0;
-        
-        msg!("Attack log initialized for: {}", ctx.accounts.attacker.key());
+
+        msg!(
+            "Attack log initialized for: {}",
+            ctx.accounts.attacker.key()
+        );
         Ok(())
     }
 }
@@ -106,7 +112,7 @@ pub struct ExploitContext<'info> {
     /// validate the signer's identity against the admin field in this account.
     #[account(mut)]
     pub target_config: UncheckedAccount<'info>,
-    
+
     /// Attack log to track unauthorized access attempts
     #[account(
         mut,
@@ -114,9 +120,9 @@ pub struct ExploitContext<'info> {
         bump
     )]
     pub attack_log: Account<'info, AttackLog>,
-    
+
     /// The attacker executing this exploit
-    /// 
+    ///
     /// ATTACK VECTOR: We sign the transaction with OUR wallet,
     /// not the admin's wallet. The vulnerable program accepts
     /// any signer without checking if they match the admin field.
@@ -134,10 +140,10 @@ pub struct InitializeAttackLog<'info> {
         bump
     )]
     pub attack_log: Account<'info, AttackLog>,
-    
+
     #[account(mut)]
     pub attacker: Signer<'info>,
-    
+
     pub system_program: Program<'info, System>,
 }
 
@@ -145,10 +151,10 @@ pub struct InitializeAttackLog<'info> {
 #[account]
 #[derive(InitSpace)]
 pub struct AttackLog {
-    pub attacker: Pubkey,         // Who attempted unauthorized access
-    pub target_config: Pubkey,    // Which config was targeted
-    pub malicious_fee: u16,       // What fee they tried to set
-    pub timestamp: i64,           // When the attack occurred
+    pub attacker: Pubkey,      // Who attempted unauthorized access
+    pub target_config: Pubkey, // Which config was targeted
+    pub malicious_fee: u16,    // What fee they tried to set
+    pub timestamp: i64,        // When the attack occurred
 }
 
 #[error_code]
@@ -165,8 +171,8 @@ mod tests {
     use anchor_lang::solana_program::account_info::AccountInfo;
     use anchor_lang::solana_program::clock::Epoch;
     use anchor_lang::{AnchorSerialize, Discriminator};
-    use std::collections::BTreeSet;
     use incorrect_authority_vuln::incorrect_authority_vuln as vuln_program;
+    use std::collections::BTreeSet;
 
     fn make_account(
         key: Pubkey,
@@ -221,14 +227,23 @@ mod tests {
             vec![],
         )));
 
-        let infos: Box<[AccountInfo<'static>]> = vec![(*config_ai).clone(), (*attacker_ai).clone()].into_boxed_slice();
+        let infos: Box<[AccountInfo<'static>]> =
+            vec![(*config_ai).clone(), (*attacker_ai).clone()].into_boxed_slice();
         let infos_ref: &[AccountInfo] = Box::leak(infos);
 
-        let config = anchor_lang::prelude::Account::<incorrect_authority_vuln::Config>::try_from(&*config_ai).unwrap();
+        let config = anchor_lang::prelude::Account::<incorrect_authority_vuln::Config>::try_from(
+            &*config_ai,
+        )
+        .unwrap();
         let caller = anchor_lang::prelude::Signer::try_from(&*attacker_ai).unwrap();
 
         let mut accounts = incorrect_authority_vuln::SetFeeVuln { config, caller };
-        let ctx = Context::new(&program_id, &mut accounts, infos_ref, incorrect_authority_vuln::SetFeeVulnBumps {});
+        let ctx = Context::new(
+            &program_id,
+            &mut accounts,
+            infos_ref,
+            incorrect_authority_vuln::SetFeeVulnBumps {},
+        );
 
         vuln_program::set_fee(ctx, 777).unwrap();
 
@@ -259,7 +274,8 @@ mod tests {
             vec![],
         )));
 
-        let infos: Box<[AccountInfo<'static>]> = vec![(*config_ai).clone(), (*attacker_ai).clone()].into_boxed_slice();
+        let infos: Box<[AccountInfo<'static>]> =
+            vec![(*config_ai).clone(), (*attacker_ai).clone()].into_boxed_slice();
         let mut infos_ref: &[AccountInfo] = Box::leak(infos);
         let mut bumps = incorrect_authority_fix::SetFeeSafeBumps {};
         let mut reallocs = BTreeSet::new();
@@ -272,6 +288,9 @@ mod tests {
             &mut bumps,
             &mut reallocs,
         );
-        assert!(result.is_err(), "has_one constraint should reject non-admin signer");
+        assert!(
+            result.is_err(),
+            "has_one constraint should reject non-admin signer"
+        );
     }
 }

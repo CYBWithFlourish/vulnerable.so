@@ -1,0 +1,16 @@
+[package]
+name = "transfer-hook-vuln"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "transfer_hook_vuln"
+
+[dependencies]
+anchor-lang = { workspace = true, features = ["init-if-needed"] }
+pinocchio = { workspace = true }
+
+[features]
+idl-build = ["anchor-lang/idl-build"]
+no-entrypoint = []

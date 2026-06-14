@@ -1,10 +1,10 @@
 #![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
 
-declare_id!("GsjJhujUxyHj3JbKNLEvWrEAjZ2NfyZtTnyLVBXrwdrE");
+declare_id!("qSxtExRw9NWQ9W5DzkRJJY6sbQPpFRP9fpRPxxpTt3q");
 
 /// # Signer Privilege Escalation Attacker Program
-/// 
+///
 /// This program demonstrates how to exploit missing signer identity validation.
 /// It attempts to attack both the vulnerable and fixed versions to show:
 /// - **Vulnerable version**: Attack succeeds (any signer can pause the protocol)
@@ -34,7 +34,7 @@ pub mod signer_privilege_attacker {
     use super::*;
 
     /// Attempts to exploit the signer privilege escalation vulnerability
-    /// 
+    ///
     /// This demonstrates how a regular user can execute privileged operations
     /// (like pausing the protocol) that should only be available to the owner.
     ///
@@ -43,12 +43,12 @@ pub mod signer_privilege_attacker {
     pub fn escalate_privilege(ctx: Context<EscalateContext>) -> Result<()> {
         msg!("🎯 Attacker: Attempting signer privilege escalation...");
         msg!("   Attacker wallet: {}", ctx.accounts.attacker.key());
-        
+
         // --- ATTACK STEP 1: Verify we are NOT the owner ---
         // This attack only works if the attacker is NOT the legitimate owner
         msg!("   ✓ Attacker has signed the transaction");
         msg!("   ✓ Attempting to execute owner-only operation");
-        
+
         // --- ATTACK STEP 2: Explain the vulnerability ---
         // VULNERABLE CODE: Checks if someone signed, not WHO signed
         // ```rust
@@ -57,7 +57,7 @@ pub mod signer_privilege_attacker {
         //     settings.paused = !settings.paused;  // No check if anyone == owner!
         //     Ok(())
         // }
-        // 
+        //
         // #[derive(Accounts)]
         // pub struct TogglePauseVuln<'info> {
         //     #[account(mut)]
@@ -68,7 +68,7 @@ pub mod signer_privilege_attacker {
         msg!("   ⚠️  Vulnerability: Victim accepts any Signer");
         msg!("   ⚠️  Missing: has_one = owner constraint");
         msg!("   ⚠️  Result: Any wallet can execute owner functions");
-        
+
         // --- ATTACK STEP 3: Demonstrate the exploit ---
         // The attacker will call the victim program's toggle_pause instruction
         // using their own wallet, gaining unauthorized control over the protocol
@@ -76,41 +76,38 @@ pub mod signer_privilege_attacker {
         msg!("   Expected outcome:");
         msg!("      - Vulnerable version: Protocol pause toggled ✅");
         msg!("      - Fixed version: Transaction rejected ❌");
-        
+
         // Log the attack attempt
         let attack_log = &mut ctx.accounts.attack_log;
         attack_log.attacker = ctx.accounts.attacker.key();
         attack_log.target_settings = ctx.accounts.target_settings.key();
         attack_log.operation = PrivilegedOperation::TogglePause;
         attack_log.timestamp = Clock::get()?.unix_timestamp;
-        
+
         msg!("✅ Attacker: Attack execution completed");
         msg!("   (If vulnerable, protocol state is now controlled by attacker)");
-        
+
         Ok(())
     }
 
     /// Attempts to exploit privilege escalation for configuration changes
-    /// 
+    ///
     /// This variant demonstrates changing protocol parameters that should
     /// only be modifiable by the owner.
-    pub fn unauthorized_config_change(
-        ctx: Context<EscalateContext>,
-        new_value: u64
-    ) -> Result<()> {
+    pub fn unauthorized_config_change(ctx: Context<EscalateContext>, new_value: u64) -> Result<()> {
         msg!("🎯 Attacker: Attempting unauthorized configuration change...");
         msg!("   Trying to set config value to: {}", new_value);
-        
+
         let attack_log = &mut ctx.accounts.attack_log;
         attack_log.attacker = ctx.accounts.attacker.key();
         attack_log.target_settings = ctx.accounts.target_settings.key();
         attack_log.operation = PrivilegedOperation::ConfigChange;
         attack_log.timestamp = Clock::get()?.unix_timestamp;
-        
+
         msg!("   Expected outcome:");
         msg!("      - Vulnerable: Config changed ✅");
         msg!("      - Fixed: Access denied ❌");
-        
+
         Ok(())
     }
 
@@ -121,8 +118,11 @@ pub mod signer_privilege_attacker {
         attack_log.target_settings = Pubkey::default();
         attack_log.operation = PrivilegedOperation::None;
         attack_log.timestamp = 0;
-        
-        msg!("Attack log initialized for: {}", ctx.accounts.attacker.key());
+
+        msg!(
+            "Attack log initialized for: {}",
+            ctx.accounts.attacker.key()
+        );
         Ok(())
     }
 }
@@ -137,7 +137,7 @@ pub struct EscalateContext<'info> {
     /// validate the signer's identity against the owner field in this account.
     #[account(mut)]
     pub target_settings: UncheckedAccount<'info>,
-    
+
     /// Attack log to track privilege escalation attempts
     #[account(
         mut,
@@ -145,9 +145,9 @@ pub struct EscalateContext<'info> {
         bump
     )]
     pub attack_log: Account<'info, AttackLog>,
-    
+
     /// The attacker executing this exploit
-    /// 
+    ///
     /// ATTACK VECTOR: We sign with OUR wallet (not the owner's).
     /// The vulnerable program accepts any Signer without checking
     /// if the signer's key matches the owner field in settings.
@@ -165,10 +165,10 @@ pub struct InitializeAttackLog<'info> {
         bump
     )]
     pub attack_log: Account<'info, AttackLog>,
-    
+
     #[account(mut)]
     pub attacker: Signer<'info>,
-    
+
     pub system_program: Program<'info, System>,
 }
 
@@ -176,20 +176,20 @@ pub struct InitializeAttackLog<'info> {
 #[account]
 #[derive(InitSpace)]
 pub struct AttackLog {
-    pub attacker: Pubkey,             // Who attempted privilege escalation
-    pub target_settings: Pubkey,      // Which settings were targeted
+    pub attacker: Pubkey,               // Who attempted privilege escalation
+    pub target_settings: Pubkey,        // Which settings were targeted
     pub operation: PrivilegedOperation, // What operation was attempted
-    pub timestamp: i64,               // When the attack occurred
+    pub timestamp: i64,                 // When the attack occurred
 }
 
 /// Types of privileged operations an attacker might attempt
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
 pub enum PrivilegedOperation {
     None,
-    TogglePause,        // Pausing/unpausing the protocol
-    ConfigChange,       // Modifying protocol parameters
-    OwnershipTransfer,  // Changing the owner
-    EmergencyWithdraw,  // Draining protocol funds
+    TogglePause,       // Pausing/unpausing the protocol
+    ConfigChange,      // Modifying protocol parameters
+    OwnershipTransfer, // Changing the owner
+    EmergencyWithdraw, // Draining protocol funds
 }
 
 #[error_code]
