@@ -23,6 +23,9 @@ signer-privilege-attacker = "BUpRCbMnYV3kTTqXbdXJ4KcnzcoxSk7G1iYK2xNEoiHW"
 missing-creator-validation-vuln = "7tFALhdsgiKWNHh5pmzz9wQ5RJgKKiHcRMcZa1Gz8xFX"
 missing-creator-validation-fix = "HiSasSPpwvxphdgGsp7iim4CjpYc6CJwY6uUWp9Qqhqc"
 missing-creator-validation-attacker = "EZr1HQFm4MrUebcLfN2Zf8LVCYhAxorFxyuw3Gx1CXCP"
+transfer-hook-vuln = "5arduqBwbRzWEDyJyFtD1nq8Xyh62nLycGvf31k8eQxm"
+transfer-hook-fix = "CdviP5RXu72sY5MEuVCnT9c3DoMkBcyfPx7zEPB1s8hY"
+transfer-hook-attacker = "9LV9Gqweu4MSFZ3SpMeFYRcUWpTpuNJT2UKdpwgBX3xK"
 
 [registry]
 url = "https://anchor.projectserum.com"

@@ -1,10 +1,10 @@
 #![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
 
-declare_id!("HfbuN5JgV5nn1UNRVyCqCAmKoSHmCuxgFjFmwfgjy7sm");
+declare_id!("EdEjFNatqvS81wnWztH8uvdRDYJbefR1eRWahUZdKn5");
 
 /// # Missing Account Validation Attacker Program
-/// 
+///
 /// This program demonstrates how to exploit missing account validation vulnerabilities.
 /// It attempts to attack both the vulnerable and fixed versions to show:
 /// - **Vulnerable version**: Attack succeeds (overwrites arbitrary account data)
@@ -37,7 +37,7 @@ pub mod missing_account_attacker {
     use super::*;
 
     /// Attempts to exploit the missing account validation vulnerability
-    /// 
+    ///
     /// This function demonstrates the attack by:
     /// 1. Accepting any account as the target
     /// 2. Crafting a malicious message
@@ -49,30 +49,30 @@ pub mod missing_account_attacker {
         msg!("🎯 Attacker: Attempting account substitution attack...");
         msg!("   Target account: {}", ctx.accounts.target_account.key());
         msg!("   Malicious message length: {} bytes", malicious_msg.len());
-        
+
         // --- ATTACK STEP 1: Verify we control the target ---
         // In a real attack, the target would be a victim's account.
         // For demonstration, we just verify the account is writable.
         msg!("   ✓ Target account is writable");
-        
+
         // --- ATTACK STEP 2: Craft malicious payload ---
         // The attacker crafts a message that, when written as bytes,
         // could corrupt critical fields in the target account.
         // For example, if the target is a config account, this could
         // overwrite the admin public key with the attacker's key.
         msg!("   ✓ Malicious payload prepared: '{}'", malicious_msg);
-        
+
         // --- ATTACK STEP 3: Attempt to pass malicious account to victim ---
         // This is where the actual exploit happens. The attacker calls
         // the victim program's instruction, passing their chosen account.
-        // 
+        //
         // VULNERABLE PROGRAM: Accepts any account, attack succeeds
         // FIXED PROGRAM: Rejects due to constraints, attack fails
         msg!("   ⚠️  Calling victim program with substituted account...");
         msg!("   Expected outcome:");
         msg!("      - Vulnerable version: Account data overwritten ✅");
         msg!("      - Fixed version: Transaction rejected ❌");
-        
+
         // Store the attack metadata for verification
         let attack_log = &mut ctx.accounts.attack_log;
         attack_log.attacker = ctx.accounts.attacker.key();
@@ -80,10 +80,10 @@ pub mod missing_account_attacker {
         attack_log.attack_type = AttackType::AccountSubstitution;
         attack_log.succeeded = true; // Will be updated by test harness
         attack_log.timestamp = Clock::get()?.unix_timestamp;
-        
+
         msg!("✅ Attacker: Attack execution completed");
         msg!("   (Check victim program's response to see if attack succeeded)");
-        
+
         Ok(())
     }
 
@@ -95,8 +95,11 @@ pub mod missing_account_attacker {
         attack_log.attack_type = AttackType::None;
         attack_log.succeeded = false;
         attack_log.timestamp = 0;
-        
-        msg!("Attack log initialized for attacker: {}", ctx.accounts.attacker.key());
+
+        msg!(
+            "Attack log initialized for attacker: {}",
+            ctx.accounts.attacker.key()
+        );
         Ok(())
     }
 }
@@ -111,7 +114,7 @@ pub struct AttackContext<'info> {
     /// goal is to exploit the VICTIM program's lack of constraints.
     #[account(mut)]
     pub target_account: UncheckedAccount<'info>,
-    
+
     /// Log account to track attack attempts
     #[account(
         mut,
@@ -119,7 +122,7 @@ pub struct AttackContext<'info> {
         bump
     )]
     pub attack_log: Account<'info, AttackLog>,
-    
+
     /// The attacker executing this exploit
     pub attacker: Signer<'info>,
 }
@@ -135,10 +138,10 @@ pub struct InitializeAttackLog<'info> {
         bump
     )]
     pub attack_log: Account<'info, AttackLog>,
-    
+
     #[account(mut)]
     pub attacker: Signer<'info>,
-    
+
     pub system_program: Program<'info, System>,
 }
 
@@ -157,10 +160,10 @@ pub struct AttackLog {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
 pub enum AttackType {
     None,
-    AccountSubstitution,    // Passing wrong account type
-    OwnershipSpoofing,      // Passing account owned by different program
-    PdaBypass,              // Bypassing PDA derivation checks
-    AuthorityEscalation,    // Modifying someone else's account
+    AccountSubstitution, // Passing wrong account type
+    OwnershipSpoofing,   // Passing account owned by different program
+    PdaBypass,           // Bypassing PDA derivation checks
+    AuthorityEscalation, // Modifying someone else's account
 }
 
 #[error_code]
@@ -177,8 +180,8 @@ mod tests {
     use anchor_lang::solana_program::account_info::AccountInfo;
     use anchor_lang::solana_program::clock::Epoch;
     use anchor_lang::{AnchorSerialize, Discriminator};
-    use std::collections::BTreeSet;
     use missing_account_vuln::missing_account_vuln as vuln_program;
+    use std::collections::BTreeSet;
 
     // Helpers for crafting test accounts with leaked lifetime.
     fn make_account(
@@ -223,7 +226,12 @@ mod tests {
         let any_unchecked = make_account(foreign_owner, false, true, 64);
 
         let mut accounts = missing_account_vuln::SetMessageVuln { any_unchecked };
-        let ctx = Context::new(&program_id, &mut accounts, &[], missing_account_vuln::SetMessageVulnBumps {});
+        let ctx = Context::new(
+            &program_id,
+            &mut accounts,
+            &[],
+            missing_account_vuln::SetMessageVulnBumps {},
+        );
 
         let msg = "pwned-by-attacker".to_string();
         vuln_program::set_message(ctx, msg.clone()).unwrap();
@@ -236,7 +244,8 @@ mod tests {
     fn attack_fails_against_fixed_program() {
         let program_id = missing_account_fix::id();
         let authority = Pubkey::new_unique();
-        let (wrong_pda, bump) = Pubkey::find_program_address(&[b"not-message", authority.as_ref()], &program_id);
+        let (wrong_pda, bump) =
+            Pubkey::find_program_address(&[b"not-message", authority.as_ref()], &program_id);
 
         // Correct owner/discriminator but wrong seeds so the PDA constraint fails.
         let message_ai = Box::leak(Box::new(AccountInfo::new(
@@ -261,11 +270,18 @@ mod tests {
             Epoch::default(),
         )));
 
-        let infos: Box<[AccountInfo<'static>]> = vec![(*message_ai).clone(), (*authority_ai).clone()].into_boxed_slice();
+        let infos: Box<[AccountInfo<'static>]> =
+            vec![(*message_ai).clone(), (*authority_ai).clone()].into_boxed_slice();
         let mut info_slice: &[AccountInfo] = Box::leak(infos);
         let mut bumps = missing_account_fix::SetMessageSafeBumps { message_box: bump };
         let mut reallocs = BTreeSet::new();
-        let result = missing_account_fix::SetMessageSafe::try_accounts(&program_id, &mut info_slice, &[], &mut bumps, &mut reallocs);
+        let result = missing_account_fix::SetMessageSafe::try_accounts(
+            &program_id,
+            &mut info_slice,
+            &[],
+            &mut bumps,
+            &mut reallocs,
+        );
         assert!(result.is_err(), "constraints should reject wrong PDA seeds");
     }
 }

@@ -11,9 +11,7 @@ pub mod missing_creator_validation_vuln {
         let fund = &mut ctx.accounts.fund;
         let contribution = &mut ctx.accounts.contribution;
 
-        if fund.deadline != 0
-            && fund.deadline < Clock::get()?.unix_timestamp as u64
-        {
+        if fund.deadline != 0 && fund.deadline < Clock::get()?.unix_timestamp as u64 {
             return Err(ErrorCode::DeadlineReached.into());
         }
 
@@ -157,10 +155,10 @@ mod tests {
         let program_id = crate::id();
         let _creator_a = Pubkey::new_unique();
         let creator_b_attacker = Pubkey::new_unique(); // Attack destination
-        
+
         let fund_pda = Pubkey::new_unique();
         let contributor = Pubkey::new_unique();
-        
+
         // Attacker's fund account (belongs to Creator B)
         let fund_ai = Box::leak(Box::new(make_account_with_key(
             fund_pda,
@@ -178,10 +176,8 @@ mod tests {
             vec![],
         )));
 
-        let (contribution_pda, bump) = Pubkey::find_program_address(
-            &[fund_pda.as_ref(), contributor.as_ref()],
-            &program_id,
-        );
+        let (contribution_pda, bump) =
+            Pubkey::find_program_address(&[fund_pda.as_ref(), contributor.as_ref()], &program_id);
 
         let contribution_ai = Box::leak(Box::new(make_account_with_key(
             contribution_pda,
@@ -204,7 +200,8 @@ mod tests {
             (*contributor_ai).clone(),
             (*contribution_ai).clone(),
             (*system_program_ai).clone(),
-        ].into_boxed_slice();
+        ]
+        .into_boxed_slice();
         let mut info_slice: &[AccountInfo] = Box::leak(infos);
 
         let mut bumps = FundContributeBumps { contribution: bump };

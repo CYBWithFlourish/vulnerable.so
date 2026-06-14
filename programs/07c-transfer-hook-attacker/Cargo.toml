@@ -1,0 +1,21 @@
+[package]
+name = "transfer-hook-attacker"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "transfer_hook_attacker"
+
+[dependencies]
+anchor-lang = { workspace = true, features = ["init-if-needed"] }
+pinocchio = { workspace = true }
+
+[dev-dependencies]
+transfer-hook-vuln = { path = "../07a-transfer-hook-vuln", features = ["no-entrypoint"] }
+transfer-hook-fix = { path = "../07b-transfer-hook-fix", features = ["no-entrypoint"] }
+anchor-lang = { workspace = true }
+
+[features]
+idl-build = ["anchor-lang/idl-build"]
+no-entrypoint = []

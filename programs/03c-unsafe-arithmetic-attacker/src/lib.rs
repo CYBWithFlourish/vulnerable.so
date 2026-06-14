@@ -1,10 +1,10 @@
 #![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
 
-declare_id!("9bSQbjn2Pkzs22ydm466bySknSLBUzszqwtxr8NxveLL");
+declare_id!("DRJRXTVenxuXkN1ipWrCiqNx9PTq13dBfQdXs2PuAgQa");
 
 /// # Unsafe Arithmetic Attacker Program
-/// 
+///
 /// This program demonstrates how to exploit integer underflow/overflow vulnerabilities.
 /// It attempts to attack both the vulnerable and fixed versions to show:
 /// - **Vulnerable version**: Attack succeeds (underflow creates infinite balance)
@@ -33,7 +33,7 @@ pub mod unsafe_arithmetic_attacker {
     use super::*;
 
     /// Attempts to exploit the integer underflow vulnerability
-    /// 
+    ///
     /// This demonstrates how unchecked arithmetic can be exploited to create
     /// infinite balances, allowing attackers to drain protocol funds.
     ///
@@ -43,11 +43,11 @@ pub mod unsafe_arithmetic_attacker {
         msg!("🎯 Attacker: Attempting integer underflow exploit...");
         msg!("   Attacker vault: {}", ctx.accounts.attacker_vault.key());
         msg!("   Attempting to withdraw: {} lamports", excessive_amount);
-        
+
         // --- ATTACK STEP 1: Show current balance ---
         let current_balance = ctx.accounts.attacker_vault.lamports();
         msg!("   Current balance: {} lamports", current_balance);
-        
+
         // --- ATTACK STEP 2: Verify exploit conditions ---
         // We're intentionally trying to withdraw MORE than we have
         require!(
@@ -55,14 +55,18 @@ pub mod unsafe_arithmetic_attacker {
             AttackError::NotExcessive
         );
         msg!("   ✓ Withdrawal amount exceeds balance (underflow will occur)");
-        msg!("   ✓ Expected result: {} - {} = ?", current_balance, excessive_amount);
-        
+        msg!(
+            "   ✓ Expected result: {} - {} = ?",
+            current_balance,
+            excessive_amount
+        );
+
         // --- ATTACK STEP 3: Explain the vulnerability ---
         // VULNERABLE CODE: Uses standard subtraction operator
         // ```rust
         // vault.balance -= amount;  // In release mode, wraps on underflow!
         // ```
-        // 
+        //
         // ATTACK MATH:
         // If current_balance = 10 and amount = 11:
         // 10 - 11 = -1 in signed arithmetic
@@ -71,13 +75,16 @@ pub mod unsafe_arithmetic_attacker {
         msg!("   ⚠️  Vulnerability: Using -= instead of checked_sub()");
         msg!("   ⚠️  In release mode, underflow wraps to u64::MAX");
         msg!("   ⚠️  After attack, balance will be ~18 quintillion!");
-        
+
         // --- ATTACK STEP 4: Execute the attack ---
         msg!("   🚨 Calling victim program to withdraw excessive amount...");
         msg!("   Expected outcome:");
-        msg!("      - Vulnerable version: Balance wraps to {} ✅", u64::MAX);
+        msg!(
+            "      - Vulnerable version: Balance wraps to {} ✅",
+            u64::MAX
+        );
         msg!("      - Fixed version: Transaction rejected ❌");
-        
+
         // Log the attack attempt
         let attack_log = &mut ctx.accounts.attack_log;
         attack_log.attacker = ctx.accounts.attacker.key();
@@ -86,10 +93,10 @@ pub mod unsafe_arithmetic_attacker {
         attack_log.withdrawal_amount = excessive_amount;
         attack_log.expected_wrapped_balance = current_balance.wrapping_sub(excessive_amount);
         attack_log.timestamp = Clock::get()?.unix_timestamp;
-        
+
         msg!("✅ Attacker: Attack execution completed");
         msg!("   (If vulnerable, vault balance is now ~infinite)");
-        
+
         Ok(())
     }
 
@@ -102,8 +109,11 @@ pub mod unsafe_arithmetic_attacker {
         attack_log.withdrawal_amount = 0;
         attack_log.expected_wrapped_balance = 0;
         attack_log.timestamp = 0;
-        
-        msg!("Attack log initialized for: {}", ctx.accounts.attacker.key());
+
+        msg!(
+            "Attack log initialized for: {}",
+            ctx.accounts.attacker.key()
+        );
         Ok(())
     }
 }
@@ -118,7 +128,7 @@ pub struct UnderflowContext<'info> {
     /// attack's goal is to exploit the VICTIM program's unsafe arithmetic operations.
     #[account(mut)]
     pub attacker_vault: UncheckedAccount<'info>,
-    
+
     /// Attack log to track underflow attempts
     #[account(
         mut,
@@ -126,7 +136,7 @@ pub struct UnderflowContext<'info> {
         bump
     )]
     pub attack_log: Account<'info, AttackLog>,
-    
+
     /// The attacker executing this exploit
     pub attacker: Signer<'info>,
 }
@@ -142,10 +152,10 @@ pub struct InitializeAttackLog<'info> {
         bump
     )]
     pub attack_log: Account<'info, AttackLog>,
-    
+
     #[account(mut)]
     pub attacker: Signer<'info>,
-    
+
     pub system_program: Program<'info, System>,
 }
 
@@ -153,12 +163,12 @@ pub struct InitializeAttackLog<'info> {
 #[account]
 #[derive(InitSpace)]
 pub struct AttackLog {
-    pub attacker: Pubkey,                // Who attempted the exploit
-    pub target_vault: Pubkey,            // Which vault was targeted
-    pub original_balance: u64,           // Balance before attack
-    pub withdrawal_amount: u64,          // Amount attempted to withdraw
-    pub expected_wrapped_balance: u64,   // What balance would be after wrap
-    pub timestamp: i64,                  // When the attack occurred
+    pub attacker: Pubkey,              // Who attempted the exploit
+    pub target_vault: Pubkey,          // Which vault was targeted
+    pub original_balance: u64,         // Balance before attack
+    pub withdrawal_amount: u64,        // Amount attempted to withdraw
+    pub expected_wrapped_balance: u64, // What balance would be after wrap
+    pub timestamp: i64,                // When the attack occurred
 }
 
 #[error_code]
@@ -204,7 +214,10 @@ mod tests {
 
     fn serialize_vault(admin: Pubkey, balance: u64) -> Vec<u8> {
         let mut data = <unsafe_arithmetic_fix::Vault as Discriminator>::DISCRIMINATOR.to_vec();
-        let state = unsafe_arithmetic_fix::Vault { balance, owner: admin };
+        let state = unsafe_arithmetic_fix::Vault {
+            balance,
+            owner: admin,
+        };
         data.extend_from_slice(&state.try_to_vec().unwrap());
         data
     }
@@ -236,14 +249,25 @@ mod tests {
             vec![],
         )));
 
-        let infos: Box<[AccountInfo<'static>]> = vec![(*vault_ai).clone(), (*owner_ai).clone()].into_boxed_slice();
+        let infos: Box<[AccountInfo<'static>]> =
+            vec![(*vault_ai).clone(), (*owner_ai).clone()].into_boxed_slice();
         let infos_ref: &[AccountInfo] = Box::leak(infos);
 
-        let vault = anchor_lang::prelude::Account::<unsafe_arithmetic_vuln::Vault>::try_from(&*vault_ai).unwrap();
+        let vault =
+            anchor_lang::prelude::Account::<unsafe_arithmetic_vuln::Vault>::try_from(&*vault_ai)
+                .unwrap();
         let signer = anchor_lang::prelude::Signer::try_from(&*owner_ai).unwrap();
 
-        let mut accounts = unsafe_arithmetic_vuln::WithdrawVuln { vault, owner: signer };
-        let ctx = Context::new(&program_id, &mut accounts, infos_ref, unsafe_arithmetic_vuln::WithdrawVulnBumps {});
+        let mut accounts = unsafe_arithmetic_vuln::WithdrawVuln {
+            vault,
+            owner: signer,
+        };
+        let ctx = Context::new(
+            &program_id,
+            &mut accounts,
+            infos_ref,
+            unsafe_arithmetic_vuln::WithdrawVulnBumps {},
+        );
 
         vuln_program::withdraw(ctx, 11).unwrap();
         assert_eq!(accounts.vault.balance, 10u64.wrapping_sub(11));
@@ -271,14 +295,25 @@ mod tests {
             vec![],
         )));
 
-        let infos: Box<[AccountInfo<'static>]> = vec![(*vault_ai).clone(), (*owner_ai).clone()].into_boxed_slice();
+        let infos: Box<[AccountInfo<'static>]> =
+            vec![(*vault_ai).clone(), (*owner_ai).clone()].into_boxed_slice();
         let infos_ref: &[AccountInfo] = Box::leak(infos);
 
-        let vault = anchor_lang::prelude::Account::<unsafe_arithmetic_fix::Vault>::try_from(&*vault_ai).unwrap();
+        let vault =
+            anchor_lang::prelude::Account::<unsafe_arithmetic_fix::Vault>::try_from(&*vault_ai)
+                .unwrap();
         let signer = anchor_lang::prelude::Signer::try_from(&*owner_ai).unwrap();
 
-        let mut accounts = unsafe_arithmetic_fix::WithdrawSafe { vault, owner: signer };
-        let ctx = Context::new(&program_id, &mut accounts, infos_ref, unsafe_arithmetic_fix::WithdrawSafeBumps {});
+        let mut accounts = unsafe_arithmetic_fix::WithdrawSafe {
+            vault,
+            owner: signer,
+        };
+        let ctx = Context::new(
+            &program_id,
+            &mut accounts,
+            infos_ref,
+            unsafe_arithmetic_fix::WithdrawSafeBumps {},
+        );
 
         let err = fix_program::withdraw(ctx, 11).unwrap_err();
         assert!(format!("{}", err).to_lowercase().contains("insufficient"));

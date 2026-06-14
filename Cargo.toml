@@ -18,6 +18,9 @@ members = [
   "programs/06a-missing-creator-validation-vuln",
   "programs/06b-missing-creator-validation-fix",
   "programs/06c-missing-creator-validation-attacker",
+  "programs/07a-transfer-hook-vuln",
+  "programs/07b-transfer-hook-fix",
+  "programs/07c-transfer-hook-attacker",
 ]
 resolver = "2"
 

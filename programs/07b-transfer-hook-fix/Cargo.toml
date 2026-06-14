@@ -1,11 +1,11 @@
 [package]
-name = "missing-ownership-check"
+name = "transfer-hook-fix"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "missing_ownership_check"
+name = "transfer_hook_fix"
 
 [dependencies]
 anchor-lang = { workspace = true, features = ["init-if-needed"] }
