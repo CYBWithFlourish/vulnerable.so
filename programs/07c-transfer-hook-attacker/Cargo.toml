@@ -10,8 +10,11 @@ name = "transfer_hook_attacker"
 [dependencies]
 anchor-lang = { workspace = true, features = ["init-if-needed"] }
 pinocchio = { workspace = true }
-transfer-hook-vuln = { path = "../07a-transfer-hook-vuln" }
-transfer-hook-fix = { path = "../07b-transfer-hook-fix" }
+
+[dev-dependencies]
+transfer-hook-vuln = { path = "../07a-transfer-hook-vuln", features = ["no-entrypoint"] }
+transfer-hook-fix = { path = "../07b-transfer-hook-fix", features = ["no-entrypoint"] }
+anchor-lang = { workspace = true }
 
 [features]
 idl-build = ["anchor-lang/idl-build"]
